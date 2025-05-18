@@ -200,10 +200,10 @@ vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower win
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
 -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
--- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
--- vim.keymap.set("n", "<C-S-l>", "<C-w>L", { desc = "Move window to the right" })
--- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
--- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
+vim.keymap.set('n', '<C-S-h>', '<C-w>H', { desc = 'Move window to the left' })
+vim.keymap.set('n', '<C-S-l>', '<C-w>L', { desc = 'Move window to the right' })
+vim.keymap.set('n', '<C-S-j>', '<C-w>J', { desc = 'Move window to the lower' })
+vim.keymap.set('n', '<C-S-k>', '<C-w>K', { desc = 'Move window to the upper' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -771,6 +771,7 @@ require('lazy').setup(
         end,
         formatters_by_ft = {
           lua = { 'stylua' },
+          rust = { 'rustfmt' },
           -- Conform can also run multiple formatters sequentially
           -- python = { "isort", "black" },
           --
@@ -813,9 +814,26 @@ require('lazy').setup(
         },
         'folke/lazydev.nvim',
       },
+      -- lazy.nvim
+      {
+        'folke/noice.nvim',
+        event = 'VeryLazy',
+        opts = {
+          -- add any options here
+        },
+        dependencies = {
+          -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
+          'MunifTanjim/nui.nvim',
+          -- OPTIONAL:
+          --   `nvim-notify` is only needed, if you want to use the notification view.
+          --   If not available, we use `mini` as the fallback
+          'rcarriga/nvim-notify',
+        },
+      },
       --- @module 'blink.cmp'
       --- @type blink.cmp.Config
       opts = {
+        cmdline = { enabled = false },
         keymap = {
           -- 'default' (recommended) for mappings similar to built-in completions
           --   <c-y> to accept ([y]es) the completion.
@@ -948,7 +966,38 @@ require('lazy').setup(
       event = 'VeryLazy',
       cmd = { 'Compile', 'Recompile' },
       config = function()
-        --local compile_mode = require 'compile-mode'
+        local compile_mode = require 'compile-mode'
+
+        vim.keymap.set('n', '<leader>cc', function()
+          compile_mode.compile { count = 15 }
+        end, { desc = '[C]ode [C]ompile' })
+        vim.api.nvim_create_autocmd('User', {
+          pattern = 'CompilationFinished',
+          callback = function(args)
+            local desiredbuf = args.data.bufnr
+
+            -- get all the windows from all the tabs
+            local alltabpages = vim.api.nvim_list_tabpages()
+            local buffound = false
+            for _, tabpage in ipairs(alltabpages) do
+              local winlist = vim.api.nvim_tabpage_list_wins(tabpage)
+              -- for each window, check its bufer
+              for _, win in ipairs(winlist) do
+                local buf = vim.api.nvim_win_get_buf(win)
+                -- move to it if it's what you want
+                if buf == desiredbuf then
+                  buffound = true
+                  vim.api.nvim_set_current_win(win)
+                  break
+                end
+              end
+              if buffound then
+                break
+              end
+            end
+          end,
+        })
+
         ---@type CompileModeOpts
         vim.g.compile_mode = {
           default_command = 'cargo run',
