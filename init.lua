@@ -464,6 +464,11 @@ require('lazy').setup(
       end,
     },
 
+    {
+      'kiddos/gemini.nvim',
+      opts = {},
+    },
+
     -- LSP Plugins
     {
       -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
