@@ -466,7 +466,11 @@ require('lazy').setup(
 
     {
       'kiddos/gemini.nvim',
-      opts = {},
+      opts = {
+        model_config = {
+          model_id = 'gemini-2.5-flash-preview-04-17',
+        },
+      },
     },
 
     -- LSP Plugins
