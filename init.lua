@@ -490,7 +490,7 @@ require('lazy').setup(
         -- Mason must be loaded before its dependents so we need to set it up here.
         -- NOTE: `opts = {}` is the same as calling `require('mason').setup({})`
         { 'mason-org/mason.nvim', opts = {} },
-        'mason-org/mason-lspconfig.nvim',
+        { 'mason-org/mason-lspconfig.nvim', opts = {} },
         'WhoIsSethDaniel/mason-tool-installer.nvim',
 
         -- Useful status updates for LSP.
@@ -667,7 +667,7 @@ require('lazy').setup(
         --  By default, Neovim doesn't support everything that is in the LSP specification.
         --  When you add blink.cmp, luasnip, etc. Neovim now has *more* capabilities.
         --  So, we create new capabilities with blink.cmp, and then broadcast that to the servers.
-        local capabilities = require('blink.cmp').get_lsp_capabilities()
+        --local capabilities = require('blink.cmp').get_lsp_capabilities()
 
         -- Enable the following language servers
         --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
@@ -727,20 +727,9 @@ require('lazy').setup(
         })
         require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
-        require('mason-lspconfig').setup {
-          ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
-          automatic_installation = false,
-          handlers = {
-            function(server_name)
-              local server = servers[server_name] or {}
-              -- This handles overriding only values explicitly passed
-              -- by the server configuration above. Useful when disabling
-              -- certain features of an LSP (for example, turning off formatting for ts_ls)
-              server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-              require('lspconfig')[server_name].setup(server)
-            end,
-          },
-        }
+        for server_name, config in pairs(servers) do
+          vim.lsp.config(server_name, config)
+        end
       end,
     },
 
@@ -785,11 +774,65 @@ require('lazy').setup(
         },
       },
     },
+    {
+      'saghen/blink.cmp',
+      -- optional: provides snippets for the snippet source
+      dependencies = { 'rafamadriz/friendly-snippets' },
 
+      -- use a release tag to download pre-built binaries
+      version = '1.*',
+      -- AND/OR build from source, requires nightly: https://rust-lang.github.io/rustup/concepts/channels.html#working-with-nightly-rust
+      -- build = 'cargo build --release',
+      -- If you use nix, you can build from source using latest nightly rust with:
+      -- build = 'nix run .#build-plugin',
+
+      ---@module 'blink.cmp'
+      ---@type blink.cmp.Config
+      opts = {
+        -- 'default' (recommended) for mappings similar to built-in completions (C-y to accept)
+        -- 'super-tab' for mappings similar to vscode (tab to accept)
+        -- 'enter' for enter to accept
+        -- 'none' for no mappings
+        --
+        -- All presets have the following mappings:
+        -- C-space: Open menu or open docs if already open
+        -- C-n/C-p or Up/Down: Select next/previous item
+        -- C-e: Hide menu
+        -- C-k: Toggle signature help (if signature.enabled = true)
+        --
+        -- See :h blink-cmp-config-keymap for defining your own keymap
+        keymap = { preset = 'enter' },
+
+        appearance = {
+          -- 'mono' (default) for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
+          -- Adjusts spacing to ensure icons are aligned
+          nerd_font_variant = 'mono',
+        },
+
+        -- (Default) Only show the documentation popup when manually triggered
+        completion = { documentation = { auto_show = false } },
+
+        -- Default list of enabled providers defined so that you can extend it
+        -- elsewhere in your config, without redefining it, due to `opts_extend`
+        sources = {
+          default = { 'lsp', 'path', 'snippets', 'buffer' },
+        },
+
+        -- (Default) Rust fuzzy matcher for typo resistance and significantly better performance
+        -- You may use a lua implementation instead by using `implementation = "lua"` or fallback to the lua implementation,
+        -- when the Rust fuzzy matcher is not available, by using `implementation = "prefer_rust"`
+        --
+        -- See the fuzzy documentation for more information
+        fuzzy = { implementation = 'prefer_rust_with_warning' },
+      },
+      opts_extend = { 'sources.default' },
+    },
+    --[[
     { -- Autocompletion
       'saghen/blink.cmp',
       event = 'VimEnter',
-      version = '1.*',
+      --version = '1.*',
+      build = 'cargo +nightly build --release',
       dependencies = {
         -- Snippet Engine
         {
@@ -838,7 +881,7 @@ require('lazy').setup(
       --- @module 'blink.cmp'
       --- @type blink.cmp.Config
       opts = {
-        cmdline = { enabled = false },
+        cmdline = { enabled = true },
         keymap = {
           -- 'default' (recommended) for mappings similar to built-in completions
           --   <c-y> to accept ([y]es) the completion.
@@ -876,7 +919,7 @@ require('lazy').setup(
         completion = {
           -- By default, you may press `<c-space>` to show the documentation.
           -- Optionally, set `auto_show = true` to show the documentation after a delay.
-          documentation = { auto_show = false, auto_show_delay_ms = 500 },
+          documentation = { auto_show = true, auto_show_delay_ms = 500 },
         },
 
         sources = {
@@ -895,13 +938,16 @@ require('lazy').setup(
         -- the rust implementation via `'prefer_rust_with_warning'`
         --
         -- See :h blink-cmp-config-fuzzy for more information
-        fuzzy = { implementation = 'prefer_rust' },
+        fuzzy = {
+          build = 'cargo +nightly build --release',
+          implementation = 'rust',
+        },
 
         -- Shows a signature help window while you type arguments for a function
         signature = { enabled = true },
       },
     },
-
+--]]
     { -- You can easily change to a different colorscheme.
       -- Change the name of the colorscheme plugin below, and then
       -- change the command in the config to whatever the name of that colorscheme is.
