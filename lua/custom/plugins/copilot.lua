@@ -1,11 +1,24 @@
 return {
+
   'zbirenbaum/copilot.lua',
-  dependencies = {
-    'copilotlsp-nvim/copilot-lsp',
-  },
   cmd = 'Copilot',
   event = 'InsertEnter',
   config = function()
-    require('copilot').setup {}
+    require('copilot').setup {
+      suggestion = {
+        enabled = true,
+        auto_trigger = true, -- Automatically show ghost text
+        debounce = 75,
+        keymap = {
+          accept = '<Tab>', -- Press Tab to accept the whole suggestion
+          accept_word = '<C-l>', -- Press Ctrl+l to accept just the next word
+          accept_line = false,
+          next = '<M-]>', -- Alt+] to cycle to next suggestion
+          prev = '<M-[>', -- Alt+[ to cycle to previous suggestion
+          dismiss = '<C-]>',
+        },
+      },
+      panel = { enabled = false }, -- Disable the side panel (optional)
+    }
   end,
 }
