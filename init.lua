@@ -496,15 +496,6 @@ require('lazy').setup(
       end,
     },
 
-    {
-      'kiddos/gemini.nvim',
-      opts = {
-        model_config = {
-          -- model_id = 'gemini-2.5-flash-preview-04-17',
-        },
-      },
-    },
-
     -- LSP Plugins
     {
       -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
@@ -719,7 +710,8 @@ require('lazy').setup(
           -- clangd = {},
           -- gopls = {},
           -- pyright = {},
-          -- rust_analyzer = {},
+          rust_analyzer = {},
+          ols = {},
           -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
           --
           -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -856,6 +848,13 @@ require('lazy').setup(
             -- OPTIONAL:
             --   `nvim-notify` is only needed, if you want to use the notification view.
             --   If not available, we use `mini` as the fallback
+            'rcarriga/nvim-notify',
+            config = function()
+              require('notify').setup {
+                merge_duplicates = true,
+                background_colour = '#000000',
+              }
+            end,
           },
         },
       },
@@ -906,7 +905,6 @@ require('lazy').setup(
       },
       opts_extend = { 'sources.default' },
     },
-
     -- Highlight todo, notes, etc in comments
     { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
@@ -1038,18 +1036,18 @@ require('lazy').setup(
     --  Uncomment any of the lines below to enable them (you will need to restart nvim).
     --
     require 'kickstart.plugins.debug',
-    -- require 'kickstart.plugins.indent_line',
-    -- require 'kickstart.plugins.lint',
+    require 'kickstart.plugins.indent_line',
+    require 'kickstart.plugins.lint',
     -- require 'kickstart.plugins.autopairs',
     -- require 'kickstart.plugins.neo-tree',
-    -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+    require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
     { 'togglebyte/aml.vim' },
     -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
     --    This is the easiest way to modularize your config.
     --
     --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-    -- { import = 'custom.plugins' },
+    { import = 'custom.plugins' },
     --
     -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
     -- Or use telescope!
