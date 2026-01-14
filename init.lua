@@ -712,7 +712,49 @@ require('lazy').setup(
           -- clangd = {},
           -- gopls = {},
           -- pyright = {},
-          rust_analyzer = {},
+          rust_analyzer = {
+            settings = {
+              ['rust-analyzer'] = {
+                procMacro = {
+                  ignored = {
+                    -- specific to leptos, helps performance
+                    ['leptos_macro'] = { 'server' },
+                  },
+                },
+                cargo = {
+                  allFeatures = true,
+                  loadOutDirsFromCheck = true,
+                  buildScripts = {
+                    enable = true,
+                  },
+                },
+              },
+            },
+          },
+
+          tailwindcss = {
+            filetypes = { 'rust', 'html' },
+            init_options = {
+              userLanguages = {
+                rust = 'html',
+              },
+            },
+            settings = {
+              tailwindCSS = {
+                experimental = {
+                  classRegex = {
+                    -- The regex to find class="..." in Rust code
+                    'class="([^"]*)"',
+                    'class: "([^"]*)"',
+                  },
+                },
+              },
+            },
+          },
+
+          emmet_language_server = {
+            filetypes = { 'rust', 'html', 'css' },
+          },
           ols = {},
           -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
           --
@@ -755,6 +797,9 @@ require('lazy').setup(
         local ensure_installed = vim.tbl_keys(servers or {})
         vim.list_extend(ensure_installed, {
           'stylua', -- Used to format Lua code
+          'tailwindcss', -- Add this
+          'emmet-language-server', -- Add this
+          'rust_analyzer',
         })
         require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -789,21 +834,47 @@ require('lazy').setup(
             return nil
           else
             return {
-              timeout_ms = 500,
+              timeout_ms = 2500,
               lsp_format = 'fallback',
             }
           end
         end,
         formatters_by_ft = {
           lua = { 'stylua' },
-          rust = { 'rustfmt', 'leptosfmt' },
+          rust = { 'leptosfmt' },
           json = { 'prettierd' },
           -- Conform can also run multiple formatters sequentially
           -- python = { "isort", "black" },
           --
           -- You can use 'stop_after_first' to run the first available formatter from the list
           javascript = { 'prettierd', 'prettier', stop_after_first = true },
+          css = { 'prettierd', 'prettier', stop_after_first = true },
         },
+      },
+    },
+    {
+      'CopilotC-Nvim/CopilotChat.nvim',
+      branch = 'main',
+      dependencies = {
+        { 'zbirenbaum/copilot.lua' },
+        { 'nvim-lua/plenary.nvim' },
+      },
+      opts = {
+        window = {
+          layout = 'float',
+          relative = 'editor',
+          width = 0.5,
+          height = 0.5,
+          border = 'single',
+          title = 'Copilot Chat',
+        },
+      },
+      keys = {
+        { '<leader>cc', ':CopilotChatToggle<CR>', desc = 'Toggle Copilot Chat' },
+        { '<leader>ce', ':CopilotChatExplain<CR>', mode = 'v', desc = 'Copilot Explain Selection' },
+        { '<leader>cr', ':CopilotChatReview<CR>', mode = 'v', desc = 'Copilot Review Selection' },
+        { '<leader>cf', ':CopilotChatFix<CR>', mode = 'v', desc = 'Copilot Fix Selection' },
+        { '<leader>cd', ':CopilotChatFixDiagnostic<CR>', desc = 'Copilot Fix Diagnostic' },
       },
     },
     {
@@ -879,7 +950,9 @@ require('lazy').setup(
         -- C-k: Toggle signature help (if signature.enabled = true)
         --
         -- See :h blink-cmp-config-keymap for defining your own keymap
-        keymap = { preset = 'enter' },
+        keymap = {
+          preset = 'enter',
+        },
 
         -- Disable command line completion as WSL is dog slow with it... shame really
         cmdline = { enabled = false },
@@ -946,61 +1019,6 @@ require('lazy').setup(
 
         -- ... and there is more!
         --  Check out: https://github.com/echasnovski/mini.nvim
-      end,
-    },
-    {
-      'ej-shafran/compile-mode.nvim',
-      branch = 'nightly',
-      dependencies = {
-        'nvim-lua/plenary.nvim',
-      },
-      event = 'VeryLazy',
-      cmd = { 'Compile', 'Recompile' },
-      config = function()
-        local compile_mode = require 'compile-mode'
-
-        vim.keymap.set('n', '<leader>cc', function()
-          compile_mode.compile { count = 15 }
-        end, { desc = '[C]ode [C]ompile' })
-        vim.api.nvim_create_autocmd('User', {
-          pattern = 'CompilationFinished',
-          callback = function(args)
-            local desiredbuf = args.data.bufnr
-
-            -- get all the windows from all the tabs
-            local alltabpages = vim.api.nvim_list_tabpages()
-            local buffound = false
-            for _, tabpage in ipairs(alltabpages) do
-              local winlist = vim.api.nvim_tabpage_list_wins(tabpage)
-              -- for each window, check its bufer
-              for _, win in ipairs(winlist) do
-                local buf = vim.api.nvim_win_get_buf(win)
-                -- move to it if it's what you want
-                if buf == desiredbuf then
-                  buffound = true
-                  vim.api.nvim_set_current_win(win)
-                  break
-                end
-              end
-              if buffound then
-                break
-              end
-            end
-          end,
-        })
-
-        ---@type CompileModeOpts
-        vim.g.compile_mode = {
-          default_command = 'cargo run',
-          error_regexp_table = {
-            rust = {
-              regex = '^.*\\( -->\\|panicked at\\) \\(.*\\):\\([0-9]\\+\\):\\([0-9]\\+\\)',
-              filename = 2,
-              row = 3,
-              col = 4,
-            },
-          },
-        }
       end,
     },
     { -- Highlight, edit, and navigate code

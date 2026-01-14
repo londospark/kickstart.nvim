@@ -10,8 +10,8 @@ return {
         auto_trigger = true, -- Automatically show ghost text
         debounce = 75,
         keymap = {
-          accept = '<Tab>', -- Press Tab to accept the whole suggestion
-          accept_word = '<C-l>', -- Press Ctrl+l to accept just the next word
+          accept = '<C-l>',
+          accept_word = false,
           accept_line = false,
           next = '<M-]>', -- Alt+] to cycle to next suggestion
           prev = '<M-[>', -- Alt+[ to cycle to previous suggestion
