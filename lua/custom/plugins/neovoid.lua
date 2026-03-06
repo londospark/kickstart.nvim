@@ -3,10 +3,10 @@
 -- This plugin spec overrides the upstream tokyonight entry so neovoid loads instead.
 
 local function toggle_theme()
-  if vim.g.colors_name == 'neovoid' then
-    vim.cmd.colorscheme 'neovoid-light'
-  else
+  if vim.g.colors_name == 'neovoid-light' then
     vim.cmd.colorscheme 'neovoid'
+  else
+    vim.cmd.colorscheme 'neovoid-light'
   end
 end
 
@@ -14,7 +14,7 @@ return {
   {
     'folke/tokyonight.nvim',
     config = function()
-      vim.cmd.colorscheme 'neovoid'
+      vim.cmd.colorscheme 'neovoid-light'
 
       vim.keymap.set('n', '<leader>tt', toggle_theme, { desc = '[T]oggle light/dark [T]heme' })
     end,
