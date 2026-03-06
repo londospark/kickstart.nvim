@@ -1,7 +1,17 @@
--- ---- NeoVoid Theme (single-file, no clone, works with Kickstart.nvim) ----
--- Drop this file into lua/plugins/ and you're done.
--- Lazy will just run this config and not try to clone anything.
+-- NeoVoid colorscheme loader.
+-- The theme itself lives in colors/neovoid.lua (a standard Vim colorscheme file).
+-- This plugin spec overrides the upstream tokyonight entry so neovoid loads instead.
 
+return {
+  {
+    'folke/tokyonight.nvim',
+    config = function()
+      vim.cmd.colorscheme 'neovoid'
+    end,
+  },
+}
+
+--[[ UNUSED: old single-file plugin approach kept for reference.
 return {
   dir = '.',
   priority = 1000,
@@ -121,3 +131,4 @@ return {
     hl('DiffText', { bg = '#113850' })
   end,
 }
+--]]
