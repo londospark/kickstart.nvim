@@ -16,4 +16,17 @@ return {
       end
     end,
   },
+
+  -- Ensure Mason installs the formatters we rely on.
+  -- leptosfmt is not available in Mason; install via: cargo install leptosfmt
+  {
+    'WhoIsSethDaniel/mason-tool-installer.nvim',
+    opts = function(_, opts)
+      opts.ensure_installed = opts.ensure_installed or {}
+      vim.list_extend(opts.ensure_installed, {
+        'prettierd',
+        'prettier',
+      })
+    end,
+  },
 }

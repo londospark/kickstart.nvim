@@ -1,12 +1,22 @@
 -- NeoVoid colorscheme loader.
--- The theme itself lives in colors/neovoid.lua (a standard Vim colorscheme file).
+-- The theme itself lives in colors/neovoid.lua and colors/neovoid-light.lua.
 -- This plugin spec overrides the upstream tokyonight entry so neovoid loads instead.
+
+local function toggle_theme()
+  if vim.g.colors_name == 'neovoid' then
+    vim.cmd.colorscheme 'neovoid-light'
+  else
+    vim.cmd.colorscheme 'neovoid'
+  end
+end
 
 return {
   {
     'folke/tokyonight.nvim',
     config = function()
       vim.cmd.colorscheme 'neovoid'
+
+      vim.keymap.set('n', '<leader>tt', toggle_theme, { desc = '[T]oggle light/dark [T]heme' })
     end,
   },
 }
